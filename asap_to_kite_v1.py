@@ -109,10 +109,10 @@ def asap_to_kite_v1(trio):
 		quality2 = quality2[::-1]
 	
 	# Recombine attributes
-	new_sequence1 = sequence2 + sequence1[0:9]
+	new_sequence1 = sequence2 + sequence1[0:10]
 	new_sequence2 = sequence3
 	
-	new_quality1 = quality2 + quality1[0:9]
+	new_quality1 = quality2 + quality1[0:10]
 	new_quality2 = quality3
 	
 	out_fq1 = formatRead(title1, new_sequence1, new_quality1)
