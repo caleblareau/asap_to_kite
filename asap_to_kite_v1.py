@@ -13,12 +13,12 @@ from Bio.Seq import Seq
 from Bio.SeqIO.QualityIO import FastqGeneralIterator
 
 opts = OptionParser()
-usage = "usage: %prog [options] [inputs] Script to reformat raw sequencing data from CellRanger-ATAC demultiplexing to a format compatible with kite (kallisto|bustools)"
+usage = "usage: %prog [options] [inputs] Script to reformat raw sequencing \ndata from CellRanger-ATAC demultiplexing to a format \ncompatible with kite (kallisto|bustools)"
 opts = OptionParser(usage=usage)
 
 opts.add_option("--fastqs", "-f", help="Path of folder created by mkfastq or bcl2fastq; can be comma separated that will be collapsed into one output.")
 opts.add_option("--sample", "-s", help="Prefix of the filenames of FASTQs to select; can be comma separated that will be collapsed into one output")
-opts.add_option("--id", "-i", default = "asap2kite", help="A unique run id, used to name output.")
+opts.add_option("--id", "-o", default = "asap2kite", help="A unique run id, used to name output.")
 opts.add_option("--cores", '-c', default = 4, help="Number of cores for parallel processing. Default = 4.")
 opts.add_option("--nreads", '-n', default = 10000000, help="Maximum number of reads to process in one iteration. Decrease this if in a low memory environment (e.g. laptop). Default = 10,000,000.")
 opts.add_option("--no-rc-R2", '-r', action="store_true", default = False, help="By default, the reverse complement of R2 (barcode) is performed (when sequencing with, for example, the NextSeq). Throw this flag to keep R2 as is-- no reverse complement (rc).")
@@ -30,6 +30,9 @@ out = options.id
 n_cpu = int(options.cores)
 n_reads= int(options.nreads)
 rc_R2 = not (options.no_rc_R2)
+print("\nASAP-to-kite, version 1\n")
+
+print("User specified options: ")
 print(options)
 
 #----------
@@ -116,7 +119,11 @@ def asap_to_kite_v1(trio):
 	out_fq2 = formatRead(title2, new_sequence2, new_quality2)
 	return([[out_fq1, out_fq2]])
 
-# Main loop -- process input reads and write out the processed fastqq files
+# Main loop -- process input reads and write out the processed fastq files
+print("\nProcessing these fastq samples: ")
+for r in R1s_for_analysis:
+	print(r.replace("_R1_001.fastq.gz", ""))
+
 outfq1file = out + "_R1.fastq.gz"
 outfq2file = out + "_R2.fastq.gz"
 with gzip.open(outfq1file, "wt") as out_f1:
@@ -142,4 +149,4 @@ with gzip.open(outfq1file, "wt") as out_f1:
 				fq_data = list(map(''.join, zip(*[item.pop(0) for item in pm])))
 				out_f1.writelines(fq_data[0])
 				out_f2.writelines(fq_data[1])
-		
+print("\nDone!\n")
