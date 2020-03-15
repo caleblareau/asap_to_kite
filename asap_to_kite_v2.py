@@ -19,6 +19,8 @@ opts = OptionParser(usage=usage)
 opts.add_option("--fastqs", "-f", help="Path of folder created by mkfastq or bcl2fastq; can be comma separated that will be collapsed into one output.")
 opts.add_option("--sample", "-s", help="Prefix of the filenames of FASTQs to select; can be comma separated that will be collapsed into one output")
 opts.add_option("--id", "-o", default = "asap2kite", help="A unique run id, used to name output.")
+opts.add_option("--conjugation", "-j", default = "TotalSeqA", help="String specifying antibody conjugation; either TotalSeqA (default) or TotalSeqB")
+
 opts.add_option("--cores", '-c', default = 4, help="Number of cores for parallel processing. Default = 4.")
 opts.add_option("--nreads", '-n', default = 10000000, help="Maximum number of reads to process in one iteration. Decrease this if in a low memory environment (e.g. laptop). Default = 10,000,000.")
 opts.add_option("--no-rc-R2", '-r', action="store_true", default = False, help="By default, the reverse complement of R2 (barcode) is performed (when sequencing with, for example, the NextSeq). Throw this flag to keep R2 as is-- no reverse complement (rc).")
@@ -30,7 +32,15 @@ out = options.id
 n_cpu = int(options.cores)
 n_reads= int(options.nreads)
 rc_R2 = not (options.no_rc_R2)
-print("\nASAP-to-kite, version 1\n")
+conjugation = options.conjugation
+print("\nASAP-to-kite, version 2\n")
+
+# Fail if bad string
+if((conjugation == "TotalSeqA") or conjugation == "TotalSeqB"):
+	print("Found conjugation method: " + conjugation + "\n")
+else:
+	sys.exit("Conjugation not found: " + conjugation + "; please supply one of TotalSeqA or TotalSeqB")
+
 
 print("User specified options: ")
 print(options)
@@ -108,15 +118,25 @@ def asap_to_kite_v1(trio):
 		# update the quality
 		quality2 = quality2[::-1]
 	
-	# Recombine attributes
-	new_sequence1 = sequence2 + sequence1[0:10]
-	new_sequence2 = sequence3
+	# Recombine attributes based on conjugation logic
+	if(conjugation == "TotalSeqA"):
+		new_sequence1 = sequence2 + sequence1[0:10]
+		new_sequence2 = sequence3
 	
-	new_quality1 = quality2 + quality1[0:10]
-	new_quality2 = quality3
+		new_quality1 = quality2 + quality1[0:10]
+		new_quality2 = quality3
+		
+	elif(conjugation == "TotalSeqB"):
+		new_sequence1 = sequence2 + sequence3[0:10] + sequence3[25:34]
+		new_sequence2 = sequence3[10:25]
 	
+		new_quality1 = quality2 + quality3[0:10] + quality3[25:34]
+		new_quality2 = quality3[10:25]
+	
+	# Prepare reads for exporting
 	out_fq1 = formatRead(title1, new_sequence1, new_quality1)
 	out_fq2 = formatRead(title2, new_sequence2, new_quality2)
+	
 	return([[out_fq1, out_fq2]])
 
 # Main loop -- process input reads and write out the processed fastq files
