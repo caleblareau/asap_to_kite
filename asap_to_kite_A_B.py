@@ -13,14 +13,13 @@ from Bio.Seq import Seq
 from Bio.SeqIO.QualityIO import FastqGeneralIterator
 from rapidfuzz import process
 
-A_barcodes = ["GTCAACTCTTTAGCG", "TGATGGCCTATTGGG", "TTCCGCCTCTCTTTG", "AGTAAGTTCAGCGTA", "AAGTATCGTTTCGCA"]
-B_barcodes = ["TGATGGCCTATTGGG"]
-
 opts = OptionParser()
 usage = "usage: %prog [options] [inputs] Script to reformat raw sequencing \ndata from CellRanger-ATAC demultiplexing to a format \ncompatible with kite (kallisto|bustools)"
 opts = OptionParser(usage=usage)
 
 opts.add_option("--fastqs", "-f", help="Path of folder created by mkfastq or bcl2fastq; can be comma separated that will be collapsed into one output.")
+opts.add_option("--TSA", "-a", help="File containing list of TotalSeq™-A barcodes")
+opts.add_option("--TSB", "-b", help="File containing list of TotalSeq™-B barcodes")
 opts.add_option("--sample", "-s", help="Prefix of the filenames of FASTQs to select; can be comma separated that will be collapsed into one output")
 opts.add_option("--id", "-o", default = "asap2kite", help="A unique run id, used to name output.")
 
@@ -40,6 +39,9 @@ n_mismatch= int(options.nmismatch)
 
 rc_R2 = not (options.no_rc_R2)
 
+# import barcodes
+A_barcodes = [line.rstrip('\n') for line in open(options.TSA)]
+B_barcodes = [line.rstrip('\n') for line in open(options.TSB)]
 
 # Reformat read for export
 def formatRead(title, sequence, quality):
