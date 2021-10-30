@@ -1,7 +1,14 @@
 # ASAP to kite
 A script to process fastqs from ASAP-seq for downstream processing with kite (kallisto | bustools). 
 
-The options are designed to mirror that of CellRanger/CellRanger-ATAC for convenience in processing
+The options are designed to mirror that of CellRanger/CellRanger-ATAC for convenience in processing.
+
+## About
+
+There are two scripts in this repository. First, `asap_to_kite_vX.py` (where `X` is an integer) represents the tool most commonly used for the simple reformatting. This will work most of the time. 
+
+In rare cases, you may have stained with both TSA and TSB antibodies. In this case, we have the `asap_to_kite_A_B.py` to separate out the two using the different PCR handles. For this to work, we do require the pre-identification of the valid barcodes for both TSA and TSB; hence, additional parameters in the `-a` and `-b` flags. 
+
 
 ## Sample use cases
 
